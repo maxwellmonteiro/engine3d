@@ -41,3 +41,36 @@ void Matrix::print() {
 		std::cout << std::endl;
 	}
 }
+
+void Matrix::init(Matrix* matrix) {
+	for (int i = 0; i < matrix->rows; i++) {
+		for (int j = 0; i < matrix->cols; i++) {
+			matrix->matrix[i][j] = 0;
+		}
+	}
+}
+
+Matrix* Matrix::getProjection(float aspectRatio, float fieldView, float zNear, float zFar) {
+	Matrix* projection = new Matrix(4, 4);	
+
+	init(projection);
+
+	projection->matrix[0][0] = aspectRatio * fieldView;
+	projection->matrix[1][1] = fieldView;
+	projection->matrix[2][2] = zFar / (zFar - zNear);
+	projection->matrix[3][2] = (-zFar * zNear) / (zFar - zNear);
+	projection->matrix[2][3] = 1.0f;
+
+	return projection;
+}
+
+Matrix* Matrix::getVertice(float x, float y, float z) {
+	Matrix* vertice = new Matrix(1, 4);
+
+	vertice->matrix[0][0] = x;
+	vertice->matrix[0][1] = y;
+	vertice->matrix[0][2] = z;
+	vertice->matrix[0][3] = 1.0f;
+
+	return vertice;
+}
