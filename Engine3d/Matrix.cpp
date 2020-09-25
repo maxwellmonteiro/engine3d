@@ -42,10 +42,10 @@ void Matrix::print() {
 	}
 }
 
-void Matrix::init(Matrix* matrix) {
-	for (int i = 0; i < matrix->rows; i++) {
-		for (int j = 0; i < matrix->cols; i++) {
-			matrix->matrix[i][j] = 0;
+void Matrix::init() {	
+	for (int i = 0; i < this->rows; i++) {
+		for (int j = 0; j < this->cols; j++) {
+			this->matrix[i][j] = 0;
 		}
 	}
 }
@@ -53,7 +53,7 @@ void Matrix::init(Matrix* matrix) {
 Matrix* Matrix::getProjection(float aspectRatio, float fieldView, float zNear, float zFar) {
 	Matrix* projection = new Matrix(4, 4);	
 
-	init(projection);
+	projection->init();
 
 	projection->matrix[0][0] = aspectRatio * fieldView;
 	projection->matrix[1][1] = fieldView;
