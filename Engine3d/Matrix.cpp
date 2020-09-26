@@ -33,6 +33,7 @@ Matrix* Matrix::operator*(const Matrix& m) {
 	return ret;
 }
 
+
 void Matrix::print() {
 	for (int i = 0; i < this->rows; i++) {
 		for (int j = 0; j < this->cols; j++) {
@@ -50,27 +51,21 @@ void Matrix::init() {
 	}
 }
 
-Matrix* Matrix::getProjection(float aspectRatio, float fieldView, float zNear, float zFar) {
-	Matrix* projection = new Matrix(4, 4);	
+void Matrix::initProjection(Matrix& projection, float aspectRatio, float fieldView, float zNear, float zFar) {	
+	projection.init();
 
-	projection->init();
-
-	projection->matrix[0][0] = aspectRatio * fieldView;
-	projection->matrix[1][1] = fieldView;
-	projection->matrix[2][2] = zFar / (zFar - zNear);
-	projection->matrix[3][2] = (-zFar * zNear) / (zFar - zNear);
-	projection->matrix[2][3] = 1.0f;
-
-	return projection;
+	projection.matrix[0][0] = aspectRatio * fieldView;
+	projection.matrix[1][1] = fieldView;
+	projection.matrix[2][2] = zFar / (zFar - zNear);
+	projection.matrix[3][2] = (-zFar * zNear) / (zFar - zNear);
+	projection.matrix[2][3] = 1.0f;
 }
 
-Matrix* Matrix::getVertice(float x, float y, float z) {
-	Matrix* vertice = new Matrix(1, 4);
+void Matrix::initVertice(Matrix& vertice, float x, float y, float z) {	
+	vertice.init();
 
-	vertice->matrix[0][0] = x;
-	vertice->matrix[0][1] = y;
-	vertice->matrix[0][2] = z;
-	vertice->matrix[0][3] = 1.0f;
-
-	return vertice;
+	vertice.matrix[0][0] = x;
+	vertice.matrix[0][1] = y;
+	vertice.matrix[0][2] = z;
+	vertice.matrix[0][3] = 1.0f;
 }

@@ -145,11 +145,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine3d.cpp" />
+    <ClCompile Include="Engine3dUtil.cpp" />
     <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="Vertice3d.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine3dUtil.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="structs.h" />
+    <ClInclude Include="Vertice3d.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

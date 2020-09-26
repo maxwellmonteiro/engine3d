@@ -6,6 +6,7 @@
 
 #include "structs.h"
 #include "Matrix.h"
+#include "Engine3dUtil.h"
 
 #define WIDTH 1280
 #define HEIGHT 720
@@ -15,9 +16,9 @@
 LARGE_INTEGER timeFreq, timeNew, timeOld;
 
 mesh meshObj;
-Matrix* projectionMatrix;
-Matrix* rotationXMatrix;
-Matrix* rotationZMatrix;
+Matrix projectionMatrix(4, 4);
+Matrix rotationXMatrix(4, 4);
+Matrix rotationZMatrix(4, 4);
 Matrix* rotationXZMatrix;
 float theta;
 
@@ -57,12 +58,12 @@ void initMesh() {
     };
 }
 
-void calcProjectedVertice(vertice3d& in, vertice3d& out, Matrix* projection) {
-    Matrix* vertice;
+void calcProjectedVertice(Vertice3d& in, Vertice3d& out, Matrix* projection) {
+    Matrix vertice(1, 4);
     Matrix* projected;
 
-    vertice = Matrix::getVertice(in.x, in.y, in.z);
-    projected = (*vertice) * (*projection);
+    Matrix::initVertice(vertice, in.x, in.y, in.z);
+    projected = vertice * (*projection);
 
     out.x = projected->matrix[0][0];
     out.y = projected->matrix[0][1];
@@ -75,26 +76,25 @@ void calcProjectedVertice(vertice3d& in, vertice3d& out, Matrix* projection) {
         out.y /= w;
         out.z /= w;
     }
-    delete vertice;
     delete projected;
 }
 
-void calcRotationZ(Matrix* rotation, float theta) {
-    rotation->matrix[0][0] = cosf(theta);
-    rotation->matrix[0][1] = sinf(theta);
-    rotation->matrix[1][0] = -sinf(theta);
-    rotation->matrix[1][1] = cosf(theta);
-    rotation->matrix[2][2] = 1;
-    rotation->matrix[3][3] = 1;
+void calcRotationZ(Matrix& rotation, float theta) {
+    rotation.matrix[0][0] = cosf(theta);
+    rotation.matrix[0][1] = sinf(theta);
+    rotation.matrix[1][0] = -sinf(theta);
+    rotation.matrix[1][1] = cosf(theta);
+    rotation.matrix[2][2] = 1;
+    rotation.matrix[3][3] = 1;
 }
 
-void calcRotationX(Matrix* rotation, float theta) {
-    rotation->matrix[0][0] = 1;
-    rotation->matrix[1][1] = cosf(theta * 0.5f);
-    rotation->matrix[1][2] = sinf(theta * 0.5f);
-    rotation->matrix[2][1] = -sinf(theta * 0.5f);
-    rotation->matrix[2][2] = cosf(theta * 0.5f);
-    rotation->matrix[3][3] = 1;
+void calcRotationX(Matrix& rotation, float theta) {
+    rotation.matrix[0][0] = 1;
+    rotation.matrix[1][1] = cosf(theta * 0.5f);
+    rotation.matrix[1][2] = sinf(theta * 0.5f);
+    rotation.matrix[2][1] = -sinf(theta * 0.5f);
+    rotation.matrix[2][2] = cosf(theta * 0.5f);
+    rotation.matrix[3][3] = 1;
 }
 
 void showFPS(float elapsedTime) {
@@ -106,15 +106,18 @@ void showFPS(float elapsedTime) {
 
 void draw(float elapsedTime) {
     glClearColor(0, 0, 0, 0);
-
     glClear(GL_COLOR_BUFFER_BIT);    
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   
+    glBegin(GL_TRIANGLES);
 
     theta += 1.0f * elapsedTime;
     calcRotationX(rotationXMatrix, theta);
     calcRotationZ(rotationZMatrix, theta);
-    rotationXZMatrix = (*rotationXMatrix) * (*rotationZMatrix);
+    rotationXZMatrix = rotationXMatrix * rotationZMatrix;
 
     triangle tProjected, tTranslated, tRotatedZ, tRotatedZX;
+    Vertice3d* normal;
     for (auto triangle : meshObj.triangles) {
 
         calcProjectedVertice(triangle.vertices[0], tRotatedZX.vertices[0], rotationXZMatrix);
@@ -126,31 +129,25 @@ void draw(float elapsedTime) {
         calcProjectedVertice(tRotatedZ.vertices[2], tRotatedZX.vertices[2], rotationXMatrix);       */
              
         tTranslated = tRotatedZX;
-        tTranslated.vertices[0].z = tRotatedZX.vertices[0].z + 3.0f;
-        tTranslated.vertices[1].z = tRotatedZX.vertices[1].z + 3.0f;
-        tTranslated.vertices[2].z = tRotatedZX.vertices[2].z + 3.0f;       
+        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 3.0f;
+        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 3.0f;
+        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 3.0f;
 
-        calcProjectedVertice(tTranslated.vertices[0], tProjected.vertices[0], projectionMatrix);
-        calcProjectedVertice(tTranslated.vertices[1], tProjected.vertices[1], projectionMatrix);
-        calcProjectedVertice(tTranslated.vertices[2], tProjected.vertices[2], projectionMatrix);
-        
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        //glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_TRIANGLES);        
-        glVertex2f(tProjected.vertices[0].x, tProjected.vertices[0].y);
-        glVertex2f(tProjected.vertices[1].x, tProjected.vertices[1].y);
-        glVertex2f(tProjected.vertices[2].x, tProjected.vertices[2].y);
-        glEnd();     
+        normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);
+        if (normal->z < 0) {
+            calcProjectedVertice(tTranslated.vertices[0], tProjected.vertices[0], &projectionMatrix);
+            calcProjectedVertice(tTranslated.vertices[1], tProjected.vertices[1], &projectionMatrix);
+            calcProjectedVertice(tTranslated.vertices[2], tProjected.vertices[2], &projectionMatrix);
 
-       /* glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_TRIANGLES);
-        glVertex2f(tProjected.vertices[0].x, tProjected.vertices[0].y);
-        glVertex2f(tProjected.vertices[1].x, tProjected.vertices[1].y);
-        glVertex2f(tProjected.vertices[2].x, tProjected.vertices[2].y);
-        glEnd();*/
+            glVertex2f(tProjected.vertices[0].x, tProjected.vertices[0].y);
+            glVertex2f(tProjected.vertices[1].x, tProjected.vertices[1].y);
+            glVertex2f(tProjected.vertices[2].x, tProjected.vertices[2].y);
+        }
+        delete normal;
     }      
     delete rotationXZMatrix;
+
+    glEnd();
 
     glFlush();
 }
@@ -170,21 +167,22 @@ void idle() {
     }
 }
 
-Matrix* initProjectionMatrix() {
+void initProjectionMatrix(Matrix& projection) {
     float zNear = 0.1f; // min z coordinate
     float zFar = 1000.0f; // max z coordinate
     float fovDegree = 90.0f; // field of view degree
     float aRatio = (float) HEIGHT / (float) WIDTH; // aspect ratio
     float fovRad = 1.0f / tanf(fovDegree * 0.5f / 180.0f * 3.14159f); // convert to radian
-    return Matrix::getProjection(aRatio, fovRad, zNear, zFar);
+    Matrix::initProjection(projection, aRatio, fovRad, zNear, zFar);
 }
 
-int main(int argc, char* argv[]) {
-    projectionMatrix = initProjectionMatrix();
-    rotationXMatrix = new Matrix(4, 4);
-    rotationZMatrix = new Matrix(4, 4);    
-    rotationXMatrix->init();
-    rotationZMatrix->init();
+int main(int argc, char* argv[]) { 
+ //   std::cout << glGetString(GL_VENDOR) << std::endl;
+ //   std::cout << glGetString(GL_RENDERER) << std::endl;
+
+    initProjectionMatrix(projectionMatrix);
+    rotationXMatrix.init();
+    rotationZMatrix.init();
 
     initMesh();
     initTime();
@@ -196,10 +194,6 @@ int main(int argc, char* argv[]) {
     glutDisplayFunc(display);
     glutIdleFunc(idle);
     glutMainLoop();
-
-    delete projectionMatrix;
-    delete rotationXMatrix;
-    delete rotationZMatrix;    
 
     return EXIT_SUCCESS;
 }

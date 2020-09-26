@@ -14,8 +14,8 @@ class Matrix {
 		Matrix* operator*(const Matrix& m);
 		void init();
 		void print();
-		static Matrix* getProjection(float aspectRatio, float fieldView, float zNear, float zFar);
-		static Matrix* getVertice(float x, float y, float z);		
+		static void initProjection(Matrix& matrix, float aspectRatio, float fieldView, float zNear, float zFar);
+		static void initVertice(Matrix& vertice, float x, float y, float z);
 };
 
 
