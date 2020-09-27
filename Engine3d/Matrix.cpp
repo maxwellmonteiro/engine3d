@@ -29,10 +29,9 @@ Matrix* Matrix::operator*(const Matrix& m) {
 			}
 			ret->matrix[i][k] = soma;
 		}		
-	}
+	}	
 	return ret;
 }
-
 
 void Matrix::print() {
 	for (int i = 0; i < this->rows; i++) {

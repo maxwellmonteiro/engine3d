@@ -57,6 +57,7 @@ bool Mesh::loadFromFile(std::string fileName) {
 			}
 		}
 		file.close();
+
 		return true;
 	}
 	return false;

@@ -11,7 +11,7 @@ class Matrix {
 		float** matrix;
 		Matrix(int rows, int cols);
 		~Matrix();		
-		Matrix* operator*(const Matrix& m);
+		Matrix* operator*(const Matrix& m);		
 		void init();
 		void print();
 		static void initProjection(Matrix& matrix, float aspectRatio, float fieldView, float zNear, float zFar);
