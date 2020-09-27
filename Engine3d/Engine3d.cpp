@@ -4,9 +4,10 @@
 #include <iostream>
 #include <Windows.h>
 
-#include "structs.h"
+#include "Mesh.h"
 #include "Matrix.h"
 #include "Engine3dUtil.h"
+#include <algorithm>
 
 #define WIDTH 1280
 #define HEIGHT 720
@@ -15,11 +16,14 @@
 
 LARGE_INTEGER timeFreq, timeNew, timeOld;
 
-mesh meshObj;
+Mesh meshObj;
 Matrix projectionMatrix(4, 4);
 Matrix rotationXMatrix(4, 4);
 Matrix rotationZMatrix(4, 4);
 Matrix* rotationXZMatrix;
+Vertice3d camera;
+Vertice3d lightDirection = { 0.0f, 0.0f, -1.0f };
+
 float theta;
 
 void initTime() {
@@ -29,33 +33,8 @@ void initTime() {
 }
 
 void initMesh() {
-    meshObj.triangles = {
-
-        // SOUTH
-        { 0.0f, 0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f },
-
-        // EAST                                                      
-        { 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f },
-        { 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f },
-
-        // NORTH                                                     
-        { 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f },
-        { 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f },
-
-        // WEST                                                      
-        { 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f, 0.0f },
-
-        // TOP                                                       
-        { 0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f },
-        { 0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f },
-
-        // BOTTOM                                                    
-        { 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f },
-        { 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f }
-        
-    };
+    meshObj.loadFromFile("teapot.obj");
+    //meshObj.loadCube();
 }
 
 void calcProjectedVertice(Vertice3d& in, Vertice3d& out, Matrix* projection) {
@@ -104,52 +83,67 @@ void showFPS(float elapsedTime) {
     glutSetWindowTitle(newTitle);
 }
 
-void draw(float elapsedTime) {
+void draw(const std::vector<Triangle> trianglesToDraw) {
     glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);    
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   
+    glClear(GL_COLOR_BUFFER_BIT);
+    //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
     glBegin(GL_TRIANGLES);
+    for (auto &triangle : trianglesToDraw) {
+        glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);
+        glVertex2f(triangle.vertices[0].x, triangle.vertices[0].y);
+        glVertex2f(triangle.vertices[1].x, triangle.vertices[1].y);
+        glVertex2f(triangle.vertices[2].x, triangle.vertices[2].y);
+    }
+    glEnd();
+    glFlush();
+}
 
+void process(float elapsedTime) {
     theta += 1.0f * elapsedTime;
     calcRotationX(rotationXMatrix, theta);
     calcRotationZ(rotationZMatrix, theta);
-    rotationXZMatrix = rotationXMatrix * rotationZMatrix;
+    rotationXZMatrix = rotationZMatrix * rotationXMatrix; // the order matters Z * X != X * Z
 
-    triangle tProjected, tTranslated, tRotatedZ, tRotatedZX;
-    Vertice3d* normal;
-    for (auto triangle : meshObj.triangles) {
+    std::vector<Triangle> trianglesToDraw;
+    Triangle tProjected, tTranslated, tRotatedZ, tRotatedZX;
+    Vertice3d* normal;    
+    for (auto &triangle : meshObj.triangles) {
 
         calcProjectedVertice(triangle.vertices[0], tRotatedZX.vertices[0], rotationXZMatrix);
         calcProjectedVertice(triangle.vertices[1], tRotatedZX.vertices[1], rotationXZMatrix);
         calcProjectedVertice(triangle.vertices[2], tRotatedZX.vertices[2], rotationXZMatrix);
 
-     /*   calcProjectedVertice(tRotatedZ.vertices[0], tRotatedZX.vertices[0], rotationXMatrix);
-        calcProjectedVertice(tRotatedZ.vertices[1], tRotatedZX.vertices[1], rotationXMatrix);
-        calcProjectedVertice(tRotatedZ.vertices[2], tRotatedZX.vertices[2], rotationXMatrix);       */
+       /* calcProjectedVertice(tRotatedZ.vertices[0], tRotatedZX.vertices[0], &rotationXMatrix);
+        calcProjectedVertice(tRotatedZ.vertices[1], tRotatedZX.vertices[1], &rotationXMatrix);
+        calcProjectedVertice(tRotatedZ.vertices[2], tRotatedZX.vertices[2], &rotationXMatrix); */      
              
         tTranslated = tRotatedZX;
-        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 3.0f;
-        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 3.0f;
-        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 3.0f;
+        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 8.0f;
+        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 8.0f;
+        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 8.0f;
 
         normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);
-        if (normal->z < 0) {
+        if (Engine3dUtil::calcDotProduct(*normal, tTranslated.vertices[0], camera) < 0.0f) {           
+            float dp = normal->dotProduct(lightDirection);
+
             calcProjectedVertice(tTranslated.vertices[0], tProjected.vertices[0], &projectionMatrix);
             calcProjectedVertice(tTranslated.vertices[1], tProjected.vertices[1], &projectionMatrix);
             calcProjectedVertice(tTranslated.vertices[2], tProjected.vertices[2], &projectionMatrix);
-
-            glVertex2f(tProjected.vertices[0].x, tProjected.vertices[0].y);
-            glVertex2f(tProjected.vertices[1].x, tProjected.vertices[1].y);
-            glVertex2f(tProjected.vertices[2].x, tProjected.vertices[2].y);
+            
+            tProjected.setRGB(dp, dp, dp);
+            trianglesToDraw.push_back(tProjected); 
         }
         delete normal;
     }      
     delete rotationXZMatrix;
 
-    glEnd();
-
-    glFlush();
+    // sort to render triangles from back to front
+    sort(trianglesToDraw.begin(), trianglesToDraw.end(), [](Triangle& t1, Triangle& t2) {
+        float z1 = (t1.vertices[0].z + t1.vertices[1].z + t1.vertices[2].z) / 3.0f;
+        float z2 = (t2.vertices[0].z + t2.vertices[1].z + t2.vertices[2].z) / 3.0f;
+        return z1 > z2;
+    });
+    draw(trianglesToDraw);
 }
 
 void display() {        
@@ -162,7 +156,7 @@ void idle() {
 
     if (elapsedTime >= (1.0f / MAX_FPS)) {        
         timeOld = timeNew;
-        draw(elapsedTime);
+        process(elapsedTime);
         showFPS(elapsedTime);
     }
 }
@@ -176,23 +170,25 @@ void initProjectionMatrix(Matrix& projection) {
     Matrix::initProjection(projection, aRatio, fovRad, zNear, zFar);
 }
 
-int main(int argc, char* argv[]) { 
- //   std::cout << glGetString(GL_VENDOR) << std::endl;
- //   std::cout << glGetString(GL_RENDERER) << std::endl;
-
+int main(int argc, char* argv[]) {   
     initProjectionMatrix(projectionMatrix);
     rotationXMatrix.init();
     rotationZMatrix.init();
+    lightDirection.normalize();
 
     initMesh();
     initTime();
 
-    glutInit(&argc, argv);
+    glutInit(&argc, argv);    
     glutInitWindowSize(WIDTH, HEIGHT);
     glutInitWindowPosition(1, 1);
-    glutCreateWindow(WINDOW_TITLE);   
+    glutCreateWindow(WINDOW_TITLE);      
     glutDisplayFunc(display);
     glutIdleFunc(idle);
+    
+    std::cout << "Vendor        : " << glGetString(GL_VENDOR) << std::endl;
+    std::cout << "Renderer      : " << glGetString(GL_RENDERER) << std::endl;
+
     glutMainLoop();
 
     return EXIT_SUCCESS;
