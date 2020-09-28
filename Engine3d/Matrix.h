@@ -2,20 +2,22 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
+
+#define MAX_MATRIX_SIZE 4 * 4
 
 class Matrix {
 	private:
 		int rows, cols;		
-		
-	public:
-		float** matrix;
-		Matrix(int rows, int cols);
-		~Matrix();		
-		Matrix* operator*(const Matrix& m);		
+		float matrix[MAX_MATRIX_SIZE] ;
+
 		void init();
-		void print();
-		static void initProjection(Matrix& matrix, float aspectRatio, float fieldView, float zNear, float zFar);
-		static void initVertice(Matrix& vertice, float x, float y, float z);
+	public:		
+		Matrix(int rows, int cols);
+		//~Matrix();		
+		float& operator()(int row, int col);
+		Matrix* operator*(Matrix& m);				
+		void print();		
 };
 
 

@@ -31,3 +31,18 @@ float Engine3dUtil::calcDotProduct(Vertice3d& normal, Vertice3d& vertice, Vertic
 
 	return ret;
 }
+
+void Engine3dUtil::initProjection(Matrix& projection, float aspectRatio, float fieldView, float zNear, float zFar) {	
+	projection(0, 0) = aspectRatio * fieldView;
+	projection(1, 1) = fieldView;
+	projection(2, 2) = zFar / (zFar - zNear);
+	projection(3, 2) = (-zFar * zNear) / (zFar - zNear);
+	projection(2, 3) = 1.0f;
+}
+
+void Engine3dUtil::initVertice(Matrix& vertice, float x, float y, float z) {	
+	vertice(0, 0) = x;
+	vertice(0, 1) = y;
+	vertice(0, 2) = z;
+	vertice(0, 3) = 1.0f;
+}

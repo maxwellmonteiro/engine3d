@@ -48,14 +48,14 @@ void calcProjectedVertice(Vertice3d& in, Vertice3d& out, Matrix* projection) {
     Matrix vertice(1, 4);
     Matrix* projected;
 
-    Matrix::initVertice(vertice, in.x, in.y, in.z);
+    Engine3dUtil::initVertice(vertice, in.x, in.y, in.z);
     projected = vertice * (*projection);   
 
-    out.x = projected->matrix[0][0];
-    out.y = projected->matrix[0][1];
-    out.z = projected->matrix[0][2];
+    out.x = (*projected)(0, 0);
+    out.y = (*projected)(0, 1);
+    out.z = (*projected)(0, 2);
 
-    float w = projected->matrix[0][3];
+    float w = (*projected)(0, 3);
 
     if (w != 0) {
         out.x /= w;
@@ -66,30 +66,30 @@ void calcProjectedVertice(Vertice3d& in, Vertice3d& out, Matrix* projection) {
 }
 
 void calcRotationZ(Matrix& rotation, float theta) {
-    rotation.matrix[0][0] = cosf(theta);
-    rotation.matrix[0][1] = sinf(theta);
-    rotation.matrix[1][0] = -sinf(theta);
-    rotation.matrix[1][1] = cosf(theta);
-    rotation.matrix[2][2] = 1;
-    rotation.matrix[3][3] = 1;
+    rotation(0, 0) = cosf(theta);
+    rotation(0, 1) = sinf(theta);
+    rotation(1, 0) = -sinf(theta);
+    rotation(1, 1) = cosf(theta);
+    rotation(2, 2) = 1;
+    rotation(3, 3) = 1;
 }
 
 void calcRotationX(Matrix& rotation, float theta) {
-    rotation.matrix[0][0] = 1;
-    rotation.matrix[1][1] = cosf(theta * 0.5f);
-    rotation.matrix[1][2] = sinf(theta * 0.5f);
-    rotation.matrix[2][1] = -sinf(theta * 0.5f);
-    rotation.matrix[2][2] = cosf(theta * 0.5f);
-    rotation.matrix[3][3] = 1;
+    rotation(0, 0) = 1;
+    rotation(1, 1) = cosf(theta * 0.5f);
+    rotation(1, 2) = sinf(theta * 0.5f);
+    rotation(2, 1) = -sinf(theta * 0.5f);
+    rotation(2, 2) = cosf(theta * 0.5f);
+    rotation(3, 3) = 1;
 }
 
 void calcRotationY(Matrix& rotation, float theta) {
-    rotation.matrix[0][0] = cosf(theta);;
-    rotation.matrix[0][2] = sinf(theta);
-    rotation.matrix[1][1] = 1;
-    rotation.matrix[2][0] = -sinf(theta);
-    rotation.matrix[2][2] = cosf(theta);
-    rotation.matrix[3][3] = 1;
+    rotation(0, 0) = cosf(theta);;
+    rotation(0, 2) = sinf(theta);
+    rotation(1, 1) = 1;
+    rotation(2, 0) = -sinf(theta);
+    rotation(2, 2) = cosf(theta);
+    rotation(3, 3) = 1;
 }
 
 void showFPS(float elapsedTime) {
@@ -215,14 +215,11 @@ void initProjectionMatrix(Matrix& projection) {
     float fovDegree = 90.0f; // field of view degree
     float aRatio = (float) HEIGHT / (float) WIDTH; // aspect ratio
     float fovRad = 1.0f / tanf(fovDegree * 0.5f / 180.0f * 3.14159f); // convert to radian
-    Matrix::initProjection(projection, aRatio, fovRad, zNear, zFar);
+    Engine3dUtil::initProjection(projection, aRatio, fovRad, zNear, zFar);
 }
 
-int main(int argc, char* argv[]) {   
-    initProjectionMatrix(projectionMatrix);
-    rotationXMatrix.init();
-    rotationZMatrix.init();
-    rotationYMatrix.init();
+int main(int argc, char* argv[]) {       
+    initProjectionMatrix(projectionMatrix);   
     lightDirection.normalize();
 
     initMesh();
