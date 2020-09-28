@@ -1,31 +1,25 @@
 #include "Matrix.h"
 
-Matrix::Matrix(int rows, int cols) {
-	//matrix = new float [rows * cols];		
+Matrix::Matrix(int rows, int cols) {	
 	this->rows = rows;
-	this->cols = cols;
+	this->cols = cols;	
+	//this->init();
+}
 
-	this->init();
-}
-/*
-Matrix::~Matrix() {	
-	delete [] matrix;
-}
-*/
 float& Matrix::operator()(int row, int col) {
 	return matrix[row * cols + col];
 }
 
-Matrix* Matrix::operator*(Matrix& m) {
+Matrix Matrix::operator*(Matrix& m) {
 	float soma;
-	Matrix* ret = new Matrix(this->rows, m.cols);
+	Matrix ret(this->rows, m.cols);
 	for (int i = 0; i < rows; i++) {		
 		for (int k = 0; k < m.cols; k++) {
 			soma = 0;
-			for (int j = 0; j < m.rows; j++) {
+			for (int j = 0; j < m.rows; j++) {				
 				soma += matrix[i * cols + j] * m(j, k);
 			}
-			(*ret)(i, k) = soma;
+			ret(i, k) = soma;
 		}		
 	}	
 	return ret;

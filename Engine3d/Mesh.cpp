@@ -6,27 +6,21 @@
 void Mesh::loadCube() {
 	this->triangles = {
 
-		// SOUTH
 		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f) },
 		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f) },
-
-		// EAST                                                      
+                                                   
 		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f) },
 		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 0.0f, 1.0f) },
-
-		// NORTH                                                     
+                                                   
 		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f) },
 		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f) },
-
-		// WEST                                                      
+                                                    
 		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f) },
 		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 0.0f, 0.0f) },
-
-		// TOP                                                       
+                                                     
 		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f) },
 		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 0.0f) },
-
-		// BOTTOM                                                    
+                                               
 		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f) },
 		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f) }
 
