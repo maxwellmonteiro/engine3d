@@ -63,9 +63,4 @@
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Engine3d.rc">
-      <Filter>Arquivos de Recurso</Filter>
-    </ResourceCompile>
-  </ItemGroup>
 </Project>

@@ -164,9 +164,6 @@
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vertice3d.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Engine3d.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
