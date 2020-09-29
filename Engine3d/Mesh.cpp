@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Macros.h"
 
 #include <fstream>
 #include <sstream>
@@ -47,7 +48,7 @@ bool Mesh::loadFromFile(std::string fileName) {
 			} else if (line[0] == 'f') {
 				int v1i, v2i, v3i;
 				str >> temp >> v1i >> v2i >> v3i;				
-				this->triangles.push_back({ cache[v1i - 1], cache[v2i - 1], cache[v3i - 1] });
+				this->triangles.push_back({ cache[castInt64(v1i) - 1], cache[castInt64(v2i) - 1], cache[castInt64(v3i) - 1] });
 			}
 		}
 		file.close();
