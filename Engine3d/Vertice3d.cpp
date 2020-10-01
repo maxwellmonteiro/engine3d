@@ -30,6 +30,26 @@ Vertice3d Vertice3d::operator-(const Vertice3d& v) {
 	return ret;
 }
 
+Vertice3d Vertice3d::operator+(const Vertice3d& v) {
+	Vertice3d ret;
+
+	ret.x = this->x + v.x;
+	ret.y = this->y + v.y;
+	ret.z = this->z + v.z;
+
+	return ret;
+}
+
+Vertice3d Vertice3d::operator*(const float v) {
+	Vertice3d ret;
+
+	ret.x = this->x * v;
+	ret.y = this->y * v;
+	ret.z = this->z * v;
+
+	return ret;
+}
+
 // Cross product
 Vertice3d Vertice3d::crossProduct(const Vertice3d& v) {	
 	Vertice3d ret;

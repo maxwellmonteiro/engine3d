@@ -15,7 +15,7 @@ class Matrix {
 	public:		
 		Matrix(int rows, int cols);		
 		float& operator()(int row, int col);
-		Matrix operator*(Matrix& m);				
+		Matrix operator*(Matrix& m);			
 		void print();		
 };
 

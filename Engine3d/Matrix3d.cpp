@@ -46,3 +46,25 @@ void Matrix3d::initVertice(float x, float y, float z) {
     Matrix::operator()(0, 2) = z;
     Matrix::operator()(0, 3) = 1.0f;
 }
+
+// only works for rotation/translatio matrix
+Matrix3d Matrix3d::quickInvert() {
+    Matrix3d matrix(4, 4);
+    matrix(0, 0) = operator()(0, 0);
+    matrix(0, 1) = operator()(1, 0);
+    matrix(0, 2) = operator()(2, 0);
+    matrix(0, 3) = 0.0f;
+    matrix(1, 0) = operator()(0, 1);
+    matrix(1, 1) = operator()(1, 1);
+    matrix(1, 2) = operator()(2, 1);
+    matrix(1, 3) = 0.0f;
+    matrix(2, 0) = operator()(0, 2);
+    matrix(2, 1) = operator()(1, 2);
+    matrix(2, 2) = operator()(2, 2);
+    matrix(2, 3) = 0.0f;
+    matrix(3, 0) = -(operator()(3, 0) * matrix(0, 0) + operator()(3, 1) * matrix(1, 0) + operator()(3, 2) * matrix(2, 0));
+    matrix(3, 1) = -(operator()(3, 0) * matrix(0, 1) + operator()(3, 1) * matrix(1, 1) + operator()(3, 2) * matrix(2, 1));
+    matrix(3, 2) = -(operator()(3, 0) * matrix(0, 2) + operator()(3, 1) * matrix(1, 2) + operator()(3, 2) * matrix(2, 2));
+    matrix(3, 3) = 1.0f;
+    return matrix;
+}

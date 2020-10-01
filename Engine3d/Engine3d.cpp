@@ -25,9 +25,12 @@ Matrix3d rotationYMatrix(4, 4);
 Matrix3d rotationZMatrix(4, 4);
 
 Vertice3d camera;
+Vertice3d lookDirection;
 Vertice3d lightDirection = { 0.0f, 0.0f, -1.0f };
 
 float theta;
+
+int keyPressed = 0;
 
 void initTime() {
     QueryPerformanceFrequency(&timeFreq);
@@ -42,7 +45,8 @@ float getTime() {
 }
 
 void initMesh() {
-    meshObj.loadFromFile("teapot.obj");
+    meshObj.loadFromFile("axis.obj");
+   // meshObj.loadFromFile("teapot.obj");
     //meshObj.loadCube();
 }
 
@@ -92,39 +96,68 @@ void draw(std::vector<Triangle> trianglesToDraw) {
     glFlush();
 }
 
+void updateCamera(float elapsedTime) {
+    if (GetAsyncKeyState(VK_UP)) {
+        camera.y += 8.0f * elapsedTime;
+    } 
+    if (GetAsyncKeyState(VK_DOWN)) {
+        camera.y -= 8.0f * elapsedTime;
+    } 
+    if (GetAsyncKeyState(VK_RIGHT)) {
+        camera.x += 8.0f * elapsedTime;
+    } 
+    if (GetAsyncKeyState(VK_LEFT)) {
+        camera.x -= 8.0f * elapsedTime;
+    }
+}
+
 void process(float elapsedTime) {
     float time = getTime();
-    theta += 1.0f * elapsedTime;
+
+    updateCamera(elapsedTime);
+
+    //theta += 1.0f * elapsedTime;
     //calcRotationY(rotationYMatrix, theta);
     rotationXMatrix.initRotationX(theta);
     rotationZMatrix.initRotationZ(theta);
     Matrix rotationXZMatrix = rotationZMatrix * rotationXMatrix; // the order matters Z * X != X * Z    
 
+    Matrix3d translation = Engine3dUtil::createTranslation(0.0f, 0.0f, 5.0f);
+    Matrix world = rotationXZMatrix * translation;
+
+    lookDirection = { 0.0f, 0.0f, 1.0f };
+    Vertice3d vUp = { 0.0f, 1.0f, 0.0f };
+    Vertice3d vTarget = camera + lookDirection;
+
+    Matrix3d cameraMatrix = Engine3dUtil::calcPointAt(camera, vTarget, vUp);
+    Matrix3d viewMatrix = cameraMatrix.quickInvert();
+
     std::vector<Triangle> trianglesToDraw;    
     
     Vertice3d normal;
-    Triangle tProjected, tTranslated, tRotatedZX;
+    Triangle tProjected, tTranslated, tRotatedZX, tViewed;    
     for (Triangle& triangle : meshObj.triangles) {        
         tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXZMatrix);
         tRotatedZX.vertices[1] = Engine3dUtil::calcProjectedVertice(triangle.vertices[1], rotationXZMatrix);
-        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);
-
-       /* calcProjectedVertice(tRotatedZ.vertices[0], tRotatedZX.vertices[0], &rotationXMatrix);
-        calcProjectedVertice(tRotatedZ.vertices[1], tRotatedZX.vertices[1], &rotationXMatrix);
-        calcProjectedVertice(tRotatedZ.vertices[2], tRotatedZX.vertices[2], &rotationXMatrix); */      
+        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);         
              
-        tTranslated = tRotatedZX;
-        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 8.0f;
-        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 8.0f;
-        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 8.0f;
+        tTranslated = tRotatedZX;       
+        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 5.0f;
+        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 5.0f;
+        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 5.0f;                
 
         normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);
         if (Engine3dUtil::calcDotProduct(normal, tTranslated.vertices[0], camera) < 0.0f) {           
             float dp = normal.dotProduct(lightDirection);
 
-            tProjected.vertices[0] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[0], projectionMatrix);
-            tProjected.vertices[1] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[1], projectionMatrix);
-            tProjected.vertices[2] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[2], projectionMatrix);
+            tViewed.vertices[0] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[0], viewMatrix);
+            tViewed.vertices[1] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[1], viewMatrix);
+            tViewed.vertices[2] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[2], viewMatrix);
+
+            // Convert 3d vertice to 2d
+            tProjected.vertices[0] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[0], projectionMatrix);
+            tProjected.vertices[1] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[1], projectionMatrix);
+            tProjected.vertices[2] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[2], projectionMatrix);
             
             tProjected.setRGB(dp, dp, dp);
             trianglesToDraw.push_back(tProjected); 

@@ -9,5 +9,6 @@ class Matrix3d : public Matrix {
 		void initRotationY(float theta);		
 		void initProjection(float aspectRatio, float fieldView, float zNear, float zFar);
 		void initVertice(float x, float y, float z);
+		Matrix3d quickInvert();
 };
 
