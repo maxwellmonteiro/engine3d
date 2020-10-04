@@ -29,8 +29,12 @@ Vertice3d lookDirection;
 Vertice3d lightDirection = { 0.0f, 0.0f, -1.0f };
 
 float theta;
+float yaw = 0;
 
 int keyPressed = 0;
+
+POINT mousePosition;
+LONG oldX = 0, oldY = 0;
 
 void initTime() {
     QueryPerformanceFrequency(&timeFreq);
@@ -84,7 +88,7 @@ void drawLatency(float elapsedTime) {
 void draw(std::vector<Triangle> trianglesToDraw) {            
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);      
-    //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
     glBegin(GL_TRIANGLES);
     for (Triangle& triangle : trianglesToDraw) {
         glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);
@@ -97,18 +101,41 @@ void draw(std::vector<Triangle> trianglesToDraw) {
 }
 
 void updateCamera(float elapsedTime) {
+    Vertice3d forward = lookDirection * (4.0f * elapsedTime);
+
     if (GetAsyncKeyState(VK_UP)) {
-        camera.y += 8.0f * elapsedTime;
+        camera.y += 4.0f * elapsedTime;
     } 
     if (GetAsyncKeyState(VK_DOWN)) {
-        camera.y -= 8.0f * elapsedTime;
+        camera.y -= 4.0f * elapsedTime;
     } 
     if (GetAsyncKeyState(VK_RIGHT)) {
-        camera.x += 8.0f * elapsedTime;
+        camera.x += 4.0f * elapsedTime;
     } 
     if (GetAsyncKeyState(VK_LEFT)) {
-        camera.x -= 8.0f * elapsedTime;
+        camera.x -= 4.0f * elapsedTime;
     }
+    if (GetAsyncKeyState(L'A')) {
+        yaw -= 2.0f * elapsedTime;        
+    }
+    if (GetAsyncKeyState(L'D')) {
+        yaw += 2.0f * elapsedTime;
+    }
+    if (GetAsyncKeyState(L'W')) {
+        camera = camera + forward;
+    }
+    if (GetAsyncKeyState(L'S')) {        
+        camera = camera - forward;       
+    }
+ /*   if (GetCursorPos(&mousePosition)) {
+        float delta = (float)(mousePosition.x - oldX);
+        if (delta != 0) {
+            yaw += (1.0f / delta) * elapsedTime;
+            std::cout << yaw << std::endl;
+        }                
+        oldX = mousePosition.x;
+        oldY = mousePosition.y;
+    }*/
 }
 
 void process(float elapsedTime) {
@@ -124,10 +151,18 @@ void process(float elapsedTime) {
 
     Matrix3d translation = Engine3dUtil::createTranslation(0.0f, 0.0f, 5.0f);
     Matrix world = rotationXZMatrix * translation;
-
-    lookDirection = { 0.0f, 0.0f, 1.0f };
+    
     Vertice3d vUp = { 0.0f, 1.0f, 0.0f };
-    Vertice3d vTarget = camera + lookDirection;
+    Vertice3d vTarget = { 0.0f, 0.0f, 1.0f };
+
+   /* yaw = 0;// -6.0f;
+    Vertice3d temp(0, 0, -15);
+    camera = temp - lookDirection * 10.0f;*/
+    // Rotate yaw    
+    Matrix3d cameraRotationMatrix(4, 4);
+    cameraRotationMatrix.initRotationY(yaw);
+    lookDirection = Engine3dUtil::calcProjectedVertice(vTarget, cameraRotationMatrix);
+    vTarget = camera + lookDirection;
 
     Matrix3d cameraMatrix = Engine3dUtil::calcPointAt(camera, vTarget, vUp);
     Matrix3d viewMatrix = cameraMatrix.quickInvert();
@@ -137,30 +172,56 @@ void process(float elapsedTime) {
     Vertice3d normal;
     Triangle tProjected, tTranslated, tRotatedZX, tViewed;    
     for (Triangle& triangle : meshObj.triangles) {        
-        tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXZMatrix);
+        /*tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXZMatrix);
         tRotatedZX.vertices[1] = Engine3dUtil::calcProjectedVertice(triangle.vertices[1], rotationXZMatrix);
-        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);         
+        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);*/
+        tTranslated.vertices[0] = triangle.vertices[0] * world;
+        tTranslated.vertices[1] = triangle.vertices[1] * world;
+        tTranslated.vertices[2] = triangle.vertices[2] * world;
              
-        tTranslated = tRotatedZX;       
+        /*tTranslated = tRotatedZX;       
         tTranslated.vertices[0].z = tTranslated.vertices[0].z + 5.0f;
         tTranslated.vertices[1].z = tTranslated.vertices[1].z + 5.0f;
-        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 5.0f;                
+        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 5.0f;*/                
 
-        normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);
+        normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);        
         if (Engine3dUtil::calcDotProduct(normal, tTranslated.vertices[0], camera) < 0.0f) {           
-            float dp = normal.dotProduct(lightDirection);
+            float dp = std::max(0.1f, lightDirection.dotProduct(normal));            
 
+            /*
             tViewed.vertices[0] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[0], viewMatrix);
             tViewed.vertices[1] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[1], viewMatrix);
             tViewed.vertices[2] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[2], viewMatrix);
+            */
+            tViewed.vertices[0] = tTranslated.vertices[0] * viewMatrix;
+            tViewed.vertices[1] = tTranslated.vertices[1] * viewMatrix;
+            tViewed.vertices[2] = tTranslated.vertices[2] * viewMatrix;
+
+            // clip triangles near plane
+            int clippedTriangles = 0;
+            Triangle clipped[2];
+            clippedTriangles = tViewed.clip({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, clipped[0], clipped[1]);
+            for (int n = 0; n < clippedTriangles; n++) {
+                tProjected.vertices[0] = clipped[n].vertices[0] * projectionMatrix;
+                tProjected.vertices[1] = clipped[n].vertices[1] * projectionMatrix;
+                tProjected.vertices[2] = clipped[n].vertices[2] * projectionMatrix;                
+
+                tProjected.vertices[0] = tProjected.vertices[0] / tProjected.vertices[0].w;
+                tProjected.vertices[1] = tProjected.vertices[1] / tProjected.vertices[1].w;
+                tProjected.vertices[2] = tProjected.vertices[2] / tProjected.vertices[2].w;             
+
+                tProjected.setRGB(dp, dp, dp);
+
+                trianglesToDraw.push_back(tProjected);
+            }
 
             // Convert 3d vertice to 2d
-            tProjected.vertices[0] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[0], projectionMatrix);
+            /*tProjected.vertices[0] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[0], projectionMatrix);
             tProjected.vertices[1] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[1], projectionMatrix);
             tProjected.vertices[2] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[2], projectionMatrix);
             
             tProjected.setRGB(dp, dp, dp);
-            trianglesToDraw.push_back(tProjected); 
+            trianglesToDraw.push_back(tProjected); */
         }        
     }          
     
@@ -207,6 +268,10 @@ int main(int argc, char* argv[]) {
 
     initMesh();
     initTime();
+
+    //GetCursorPos(&mousePosition);
+    //oldX = mousePosition.x;
+    //oldY = mousePosition.y;
 
     glutInit(&argc, argv);    
     glutInitWindowSize(WIDTH, HEIGHT);

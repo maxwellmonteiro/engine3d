@@ -3,7 +3,7 @@
 Matrix::Matrix(int rows, int cols) {	
 	this->rows = rows;
 	this->cols = cols;	
-	//this->init();
+	this->init();
 }
 
 float& Matrix::operator()(int row, int col) {

@@ -11,6 +11,6 @@ class Engine3dUtil {
 		static Vertice3d calcProjectedVertice(Vertice3d& in, Matrix& projection);
 		static Matrix3d calcPointAt(Vertice3d& position, Vertice3d& target, Vertice3d& up);
 		static Matrix3d createIdentity();
-		static Matrix3d createTranslation(float x, float y, float z);
+		static Matrix3d createTranslation(float x, float y, float z);		
 };
 
