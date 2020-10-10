@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <iostream>
 #include <Windows.h>
+#include <list>
 
 #include "Mesh.h"
 #include "Matrix3d.h"
 #include "Engine3dUtil.h"
 #include <algorithm>
 
-#define WIDTH 1280
+#define WIDTH 720
 #define HEIGHT 720
 #define WINDOW_TITLE "Engine 3d"
 #define MAX_FPS 120.0f
@@ -49,7 +50,7 @@ float getTime() {
 }
 
 void initMesh() {
-    meshObj.loadFromFile("axis.obj");
+    meshObj.loadFromFile("mountains.obj");
    // meshObj.loadFromFile("teapot.obj");
     //meshObj.loadCube();
 }
@@ -74,24 +75,24 @@ void glPrintText(float x, float y, float r, float g, float b, void* font, char* 
 void drawFPS(float elapsedTime) {
     char text[100];
     float fps = 1.0f / elapsedTime;
-    sprintf_s(text, "FPS:     %4.0f", fps);
+    sprintf_s(text, "frame rate: %4.0f fps", fps);
     glPrintText(-1.0f, 0.96f, 1.0f, 1.0f, 1.0f, GLUT_BITMAP_8_BY_13, text);    
 }
 
 void drawLatency(float elapsedTime) {
     char text[100];
     float latency = elapsedTime * 1000.0f;
-    sprintf_s(text, "Latency: %4.0f ms", latency);
+    sprintf_s(text, "frame time: %4.0f ms", latency);
     glPrintText(-1.0f, 0.92f, 1.0f, 1.0f, 1.0f, GLUT_BITMAP_8_BY_13, text);   
 }
 
 void draw(std::vector<Triangle> trianglesToDraw) {            
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);      
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
     glBegin(GL_TRIANGLES);
     for (Triangle& triangle : trianglesToDraw) {
-        glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);
+        glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);        
         glVertex2f(triangle.vertices[0].x, triangle.vertices[0].y);
         glVertex2f(triangle.vertices[1].x, triangle.vertices[1].y);
         glVertex2f(triangle.vertices[2].x, triangle.vertices[2].y);
@@ -136,6 +137,50 @@ void updateCamera(float elapsedTime) {
         oldX = mousePosition.x;
         oldY = mousePosition.y;
     }*/
+}
+
+std::vector<Triangle> clipScreen(std::vector<Triangle> triangles) {
+    std::vector<Triangle> ret;
+    for (Triangle& tri : triangles) {
+        Triangle clipped[2];
+        std::list<Triangle> triList;
+        
+        triList.push_back(tri);
+        int newTriangles = 1;
+
+        for (int p = 0; p < 4; p++) {
+            int trisToAdd = 0;
+            while (newTriangles > 0) {
+                Triangle test = triList.front();
+                triList.pop_front();
+                newTriangles--;
+
+                switch (p) {
+                    case 0: // TOP OF SCREEN, NORMAL POINT DOWN
+                        trisToAdd = test.clip({ 0.0f, 1.0f, 0.0f }, { 0.0f, -1.0f, 0.0f }, clipped[0], clipped[1]);
+                        break;
+                    case 1: // BOTTOM OF SCREEN, NORMAL POINT UP
+                        trisToAdd = test.clip({ 0.0f, -1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, clipped[0], clipped[1]);
+                        break;
+                    case 2: // LEFT OF SCREEN, NORMAL POINT RIGHT
+                        trisToAdd = test.clip({ -1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]);                        
+                        break;
+                    case 3: // RIGHT OF SCREEN, NORMAL POINT LEFT
+                        trisToAdd = test.clip({ 1.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]);
+                        break;
+                }
+
+                for (int w = 0; w < trisToAdd; w++) {
+                    triList.push_back(clipped[w]);
+                }
+            }
+            newTriangles = triList.size();
+        }
+        for (Triangle& t : triList) {            
+            ret.push_back(t);
+        }        
+    }
+    return ret;
 }
 
 void process(float elapsedTime) {
@@ -210,6 +255,7 @@ void process(float elapsedTime) {
                 tProjected.vertices[1] = tProjected.vertices[1] / tProjected.vertices[1].w;
                 tProjected.vertices[2] = tProjected.vertices[2] / tProjected.vertices[2].w;             
 
+                //tProjected.copyRGB(clipped[n]);
                 tProjected.setRGB(dp, dp, dp);
 
                 trianglesToDraw.push_back(tProjected);
@@ -231,8 +277,9 @@ void process(float elapsedTime) {
         float z2 = (t2.vertices[0].z + t2.vertices[1].z + t2.vertices[2].z) / 3.0f;
         return z1 > z2;
     });   
-    
-    draw(trianglesToDraw);   
+
+    draw(clipScreen(trianglesToDraw));
+    //draw(trianglesToDraw);   
     time = getTime() - time;
     drawLatency(time);
     drawFPS(elapsedTime);

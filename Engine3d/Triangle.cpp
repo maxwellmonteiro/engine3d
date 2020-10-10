@@ -52,17 +52,13 @@ int Triangle::clip(Vertice3d planeP, Vertice3d planeN, Triangle& outTriangle1, T
 		// all points inside, keep the triangle
 		outTriangle1 = *this;
 		return 1;
-	} else if (insidePointsCount == 1 && outsidePointsCount == 2) {
-		outTriangle1.copyRGB(*this);
-
+	} else if (insidePointsCount == 1 && outsidePointsCount == 2) {		
 		outTriangle1.vertices[0] = *insidePoints[0];
 		outTriangle1.vertices[1] = Vertice3d::intersect(planeP, planeN, *insidePoints[0], *outsidePoints[0]);
 		outTriangle1.vertices[2] = Vertice3d::intersect(planeP, planeN, *insidePoints[0], *outsidePoints[1]);
+		outTriangle1.copyRGB(*this);				
 		return 1;
-	} else if (insidePointsCount == 2 && outsidePointsCount == 1) {
-		outTriangle1.copyRGB(*this);
-		outTriangle2.copyRGB(*this);
-
+	} else if (insidePointsCount == 2 && outsidePointsCount == 1) {		
 		outTriangle1.vertices[0] = *insidePoints[0];
 		outTriangle1.vertices[1] = *insidePoints[1];
 		outTriangle1.vertices[2] = Vertice3d::intersect(planeP, planeN, *insidePoints[0], *outsidePoints[0]);
@@ -70,6 +66,8 @@ int Triangle::clip(Vertice3d planeP, Vertice3d planeN, Triangle& outTriangle1, T
 		outTriangle2.vertices[0] = *insidePoints[1];
 		outTriangle2.vertices[1] = outTriangle1.vertices[2];
 		outTriangle2.vertices[2] = Vertice3d::intersect(planeP, planeN, *insidePoints[1], *outsidePoints[0]);
+		outTriangle1.copyRGB(*this);
+		outTriangle2.copyRGB(*this);
 		return 2;
 	}
 }
