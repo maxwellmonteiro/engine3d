@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <list>
+#include <fstream>
 
 #include "Mesh.h"
 #include "Matrix3d.h"
@@ -37,6 +38,43 @@ int keyPressed = 0;
 POINT mousePosition;
 LONG oldX = 0, oldY = 0;
 
+unsigned char* readBMP(std::string filename, int& width, int& height) {
+    std::ifstream file(filename);    
+
+    unsigned char info[54];
+    file.read((char*) info, 54);
+
+    // extract image height and width from header    
+    memcpy(&width, info + 18, sizeof(int));
+    memcpy(&height, info + 22, sizeof(int));
+
+    int heightSign = 1;
+    if (height < 0){
+        heightSign = -1;
+    }
+
+    int size = 3 * width * abs(height);
+    unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel   
+    file.read((char*) data, size);
+    file.close();
+ 
+    return data;
+}
+
+void initTexture() {
+    unsigned char* data;
+    GLuint idTextura;
+    int width, height;
+    // Comandos de inicialização para textura
+    data = readBMP("imagem.bmp", width, height);
+    glGenTextures(1, &idTextura);
+    glBindTexture(GL_TEXTURE_2D, idTextura);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glEnable(GL_TEXTURE_2D);
+}
+
 void initTime() {
     QueryPerformanceFrequency(&timeFreq);
     QueryPerformanceCounter(&timeOld);
@@ -50,9 +88,9 @@ float getTime() {
 }
 
 void initMesh() {
-    meshObj.loadFromFile("mountains.obj");
+   // meshObj.loadFromFile("mountains.obj");
    // meshObj.loadFromFile("teapot.obj");
-    //meshObj.loadCube();
+    meshObj.loadCube();
 }
 
 void showFPS(float elapsedTime) {
@@ -92,9 +130,12 @@ void draw(std::vector<Triangle> trianglesToDraw) {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
     glBegin(GL_TRIANGLES);
     for (Triangle& triangle : trianglesToDraw) {
-        glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);        
-        glVertex2f(triangle.vertices[0].x, triangle.vertices[0].y);
+        glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);  
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2f(triangle.vertices[0].x, triangle.vertices[0].y);  
+        glTexCoord2f(1.0f, 0.0f);
         glVertex2f(triangle.vertices[1].x, triangle.vertices[1].y);
+        glTexCoord2f(1.0f, 1.0f);
         glVertex2f(triangle.vertices[2].x, triangle.vertices[2].y);
     }    
     glEnd();    
@@ -146,7 +187,7 @@ std::vector<Triangle> clipScreen(std::vector<Triangle> triangles) {
         std::list<Triangle> triList;
         
         triList.push_back(tri);
-        int newTriangles = 1;
+        size_t newTriangles = 1;
 
         for (int p = 0; p < 4; p++) {
             int trisToAdd = 0;
@@ -216,28 +257,16 @@ void process(float elapsedTime) {
     
     Vertice3d normal;
     Triangle tProjected, tTranslated, tRotatedZX, tViewed;    
-    for (Triangle& triangle : meshObj.triangles) {        
-        /*tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXZMatrix);
-        tRotatedZX.vertices[1] = Engine3dUtil::calcProjectedVertice(triangle.vertices[1], rotationXZMatrix);
-        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);*/
+    for (Triangle& triangle : meshObj.triangles) {              
         tTranslated.vertices[0] = triangle.vertices[0] * world;
         tTranslated.vertices[1] = triangle.vertices[1] * world;
         tTranslated.vertices[2] = triangle.vertices[2] * world;
-             
-        /*tTranslated = tRotatedZX;       
-        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 5.0f;
-        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 5.0f;
-        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 5.0f;*/                
+        tTranslated.copyTexture(triangle);                                    
 
         normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);        
         if (Engine3dUtil::calcDotProduct(normal, tTranslated.vertices[0], camera) < 0.0f) {           
             float dp = std::max(0.1f, lightDirection.dotProduct(normal));            
-
-            /*
-            tViewed.vertices[0] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[0], viewMatrix);
-            tViewed.vertices[1] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[1], viewMatrix);
-            tViewed.vertices[2] = Engine3dUtil::calcProjectedVertice(tTranslated.vertices[2], viewMatrix);
-            */
+          
             tViewed.vertices[0] = tTranslated.vertices[0] * viewMatrix;
             tViewed.vertices[1] = tTranslated.vertices[1] * viewMatrix;
             tViewed.vertices[2] = tTranslated.vertices[2] * viewMatrix;
@@ -247,27 +276,23 @@ void process(float elapsedTime) {
             Triangle clipped[2];
             clippedTriangles = tViewed.clip({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, clipped[0], clipped[1]);
             for (int n = 0; n < clippedTriangles; n++) {
+                // Project 3d into 2d
                 tProjected.vertices[0] = clipped[n].vertices[0] * projectionMatrix;
                 tProjected.vertices[1] = clipped[n].vertices[1] * projectionMatrix;
-                tProjected.vertices[2] = clipped[n].vertices[2] * projectionMatrix;                
+                tProjected.vertices[2] = clipped[n].vertices[2] * projectionMatrix;  
 
+                tProjected.copyTexture(clipped[n]);
+
+                // Scale into view
                 tProjected.vertices[0] = tProjected.vertices[0] / tProjected.vertices[0].w;
                 tProjected.vertices[1] = tProjected.vertices[1] / tProjected.vertices[1].w;
                 tProjected.vertices[2] = tProjected.vertices[2] / tProjected.vertices[2].w;             
 
                 //tProjected.copyRGB(clipped[n]);
-                tProjected.setRGB(dp, dp, dp);
+                //tProjected.setRGB(dp, dp, dp);
 
                 trianglesToDraw.push_back(tProjected);
-            }
-
-            // Convert 3d vertice to 2d
-            /*tProjected.vertices[0] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[0], projectionMatrix);
-            tProjected.vertices[1] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[1], projectionMatrix);
-            tProjected.vertices[2] = Engine3dUtil::calcProjectedVertice(tViewed.vertices[2], projectionMatrix);
-            
-            tProjected.setRGB(dp, dp, dp);
-            trianglesToDraw.push_back(tProjected); */
+            }          
         }        
     }          
     
@@ -330,6 +355,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Vendor        : " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "Renderer      : " << glGetString(GL_RENDERER) << std::endl;
 
+    initTexture();
     glutMainLoop();
 
     return EXIT_SUCCESS;

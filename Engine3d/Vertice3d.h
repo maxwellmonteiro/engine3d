@@ -19,6 +19,6 @@ class Vertice3d {
 		Vertice3d crossProduct(const Vertice3d& v);
 		float dotProduct(const Vertice3d& v);
 		void normalize();
-		static Vertice3d intersect(Vertice3d& planeP, Vertice3d& planeN, Vertice3d& lineStart, Vertice3d& lineEnd);
+		static Vertice3d intersect(Vertice3d& planeP, Vertice3d& planeN, Vertice3d& lineStart, Vertice3d& lineEnd, float& t);
 };
 

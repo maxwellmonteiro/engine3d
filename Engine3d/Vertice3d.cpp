@@ -106,12 +106,12 @@ void Vertice3d::normalize() {
 	planeP = point int the plane, 
 	planeN = normal to the plane,
 */
-Vertice3d Vertice3d::intersect(Vertice3d& planeP, Vertice3d& planeN, Vertice3d& lineStart, Vertice3d& lineEnd) {
+Vertice3d Vertice3d::intersect(Vertice3d& planeP, Vertice3d& planeN, Vertice3d& lineStart, Vertice3d& lineEnd, float& t) {
 	planeN.normalize();
 	float planeD = -planeN.dotProduct(planeP);
 	float ad = lineStart.dotProduct(planeN);
 	float bd = lineEnd.dotProduct(planeN);
-	float t = (-planeD - ad) / (bd - ad);
+	t = (-planeD - ad) / (bd - ad);
 	Vertice3d lineStartToEnd = lineEnd - lineStart;
 	Vertice3d lineToIntersect = lineStartToEnd * t;
 	return lineStart + lineToIntersect;

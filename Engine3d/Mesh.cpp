@@ -7,23 +7,23 @@
 void Mesh::loadCube() {
 	this->triangles = {
 
-		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f) },
-		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f) },
+		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
                                                    
-		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f) },
-		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 0.0f, 1.0f) },
+		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(1.0f, 0.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 0.0f, 1.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
                                                    
-		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f) },
-		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f) },
+		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
                                                     
-		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f) },
-		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 0.0f, 0.0f) },
+		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 0.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
                                                      
-		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f) },
-		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 0.0f) },
+		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(0.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(0.0f, 1.0f, 0.0f), Vertice3d(1.0f, 1.0f, 1.0f), Vertice3d(1.0f, 1.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
                                                
-		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f) },
-		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f) }
+		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) },
+		{ Vertice3d(1.0f, 0.0f, 1.0f), Vertice3d(0.0f, 0.0f, 0.0f), Vertice3d(1.0f, 0.0f, 0.0f), Vertice2d(0.0f, 1.0f), Vertice2d(0.0f, 0.0f), Vertice2d(1.0f, 0.0f) }
 
 	};
 }
