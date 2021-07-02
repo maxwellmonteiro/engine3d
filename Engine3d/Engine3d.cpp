@@ -29,6 +29,8 @@ Vertice3d lookDirection;
 Vertice3d lightDirection = { 0.0f, 0.0f, -1.0f };
 
 float theta;
+float thetaX;
+float thetaY;
 
 int keyPressed = 0;
 
@@ -45,9 +47,9 @@ float getTime() {
 }
 
 void initMesh() {
-    meshObj.loadFromFile("axis.obj");
-   // meshObj.loadFromFile("teapot.obj");
-    //meshObj.loadCube();
+   //meshObj.loadFromFile("axis.obj");
+   meshObj.loadFromFile("teapot.obj");
+   //meshObj.loadCube();
 }
 
 void showFPS(float elapsedTime) {
@@ -84,7 +86,7 @@ void drawLatency(float elapsedTime) {
 void draw(std::vector<Triangle> trianglesToDraw) {            
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);      
-    //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // wired model
     glBegin(GL_TRIANGLES);
     for (Triangle& triangle : trianglesToDraw) {
         glColor3f(triangle.vertices[0].r, triangle.vertices[0].g, triangle.vertices[0].b);
@@ -97,17 +99,34 @@ void draw(std::vector<Triangle> trianglesToDraw) {
 }
 
 void updateCamera(float elapsedTime) {
+
+    if (GetAsyncKeyState(L'W')) {
+        camera.y += 4.0f * elapsedTime;
+    }
+    if (GetAsyncKeyState(L'S')) {
+        camera.y -= 4.0f * elapsedTime;
+    }
+    if (GetAsyncKeyState(L'D')) {
+        camera.x += 4.0f * elapsedTime;
+    }
+    if (GetAsyncKeyState(L'A')) {
+        camera.x -= 4.0f * elapsedTime;
+    }
     if (GetAsyncKeyState(VK_UP)) {
-        camera.y += 8.0f * elapsedTime;
+        //camera.y += 8.0f * elapsedTime;
+        thetaX += 0.01f;
     } 
     if (GetAsyncKeyState(VK_DOWN)) {
-        camera.y -= 8.0f * elapsedTime;
+       // camera.y -= 8.0f * elapsedTime;
+        thetaX -= 0.01f;
     } 
     if (GetAsyncKeyState(VK_RIGHT)) {
-        camera.x += 8.0f * elapsedTime;
+       // camera.x += 8.0f * elapsedTime;
+        thetaY += 0.01f;
     } 
     if (GetAsyncKeyState(VK_LEFT)) {
-        camera.x -= 8.0f * elapsedTime;
+        //camera.x -= 8.0f * elapsedTime;
+        thetaY -= 0.01f;
     }
 }
 
@@ -118,8 +137,11 @@ void process(float elapsedTime) {
 
     //theta += 1.0f * elapsedTime;
     //calcRotationY(rotationYMatrix, theta);
-    rotationXMatrix.initRotationX(theta);
+    rotationYMatrix.initRotationY(thetaY);
+    rotationXMatrix.initRotationX(thetaX);
+    //rotationXMatrix.initRotationX(theta);
     rotationZMatrix.initRotationZ(theta);
+    Matrix rotationXYMatrix = rotationXMatrix * rotationYMatrix;
     Matrix rotationXZMatrix = rotationZMatrix * rotationXMatrix; // the order matters Z * X != X * Z    
 
     Matrix3d translation = Engine3dUtil::createTranslation(0.0f, 0.0f, 5.0f);
@@ -137,14 +159,14 @@ void process(float elapsedTime) {
     Vertice3d normal;
     Triangle tProjected, tTranslated, tRotatedZX, tViewed;    
     for (Triangle& triangle : meshObj.triangles) {        
-        tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXZMatrix);
-        tRotatedZX.vertices[1] = Engine3dUtil::calcProjectedVertice(triangle.vertices[1], rotationXZMatrix);
-        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXZMatrix);         
+        tRotatedZX.vertices[0] = Engine3dUtil::calcProjectedVertice(triangle.vertices[0], rotationXYMatrix/*rotationXZMatrix*/);
+        tRotatedZX.vertices[1] = Engine3dUtil::calcProjectedVertice(triangle.vertices[1], rotationXYMatrix/*rotationXZMatrix*/);
+        tRotatedZX.vertices[2] = Engine3dUtil::calcProjectedVertice(triangle.vertices[2], rotationXYMatrix/*rotationXZMatrix*/);
              
         tTranslated = tRotatedZX;       
-        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 5.0f;
-        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 5.0f;
-        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 5.0f;                
+        tTranslated.vertices[0].z = tTranslated.vertices[0].z + 8.0f;
+        tTranslated.vertices[1].z = tTranslated.vertices[1].z + 8.0f;
+        tTranslated.vertices[2].z = tTranslated.vertices[2].z + 8.0f;                
 
         normal = Engine3dUtil::calcNormal(tTranslated.vertices[0], tTranslated.vertices[1], tTranslated.vertices[2]);
         if (Engine3dUtil::calcDotProduct(normal, tTranslated.vertices[0], camera) < 0.0f) {           
